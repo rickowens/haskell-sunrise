@@ -1,6 +1,7 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, NamedFieldPuns #-}
 module Main (main) where
 
+import Data.ByteString (ByteString)
 import Snap (Snap, writeBS)
 import Web.Moonshine (runMoonshine, route)
 
@@ -20,15 +21,26 @@ import Web.Moonshine (runMoonshine, route)
 -}
 main :: IO ()
 main =
-  runMoonshine $ route [
-    ("/hello", hello)
-  ]
+  runMoonshine (\config ->
+    route [
+      ("/hello", hello config)
+    ]
+  )
 
 
 -- Private Types --------------------------------------------------------------
+
+data Config =
+  Config {
+    salutation :: ByteString
+  }
+
+
 -- Private Functions ----------------------------------------------------------
 
-hello :: Snap ()
-hello = writeBS "hi!\n"
+hello :: Config -> Snap ()
+hello Config {salutation} = do
+  writeBS salutation
+  writeBS "\n"
 
 
