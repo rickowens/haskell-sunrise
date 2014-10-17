@@ -18,10 +18,11 @@ cabal-version:       >=1.10
 executable sunrise
   main-is:             sunrise.hs
   -- other-modules:       
-  -- other-extensions:    
+  other-extensions:   DeriveGeneric
   build-depends:
     base >=4.7 && <4.8,
     moonshine,
+    yaml,
     snap,
     bytestring
   hs-source-dirs:      src

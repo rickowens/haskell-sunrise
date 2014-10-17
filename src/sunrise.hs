@@ -1,9 +1,12 @@
-{-# LANGUAGE OverloadedStrings, NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings, NamedFieldPuns, DeriveGeneric #-}
 module Main (main) where
 
-import Data.ByteString (ByteString)
+import GHC.Generics (Generic)
+
+import qualified Data.ByteString.Char8 as BS
 import Snap (Snap, writeBS)
 import Web.Moonshine (runMoonshine, route)
+import Data.Yaml (FromJSON)
 
 -- Public Types ---------------------------------------------------------------
 -- Semi-Public Types ----------------------------------------------------------
@@ -32,15 +35,16 @@ main =
 
 data Config =
   Config {
-    salutation :: ByteString
-  }
+    salutation :: String
+  } deriving (Generic)
 
+instance FromJSON Config
 
 -- Private Functions ----------------------------------------------------------
 
 hello :: Config -> Snap ()
 hello Config {salutation} = do
-  writeBS salutation
+  writeBS $ BS.pack salutation
   writeBS "\n"
 
 
