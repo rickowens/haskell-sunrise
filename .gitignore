@@ -2,3 +2,4 @@
 !/dist/resources/
 /cabal.sandbox.config
 /.cabal-sandbox
+/log
