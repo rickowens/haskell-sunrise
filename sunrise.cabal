@@ -20,7 +20,7 @@ executable sunrise
   -- other-modules:       
   other-extensions:   DeriveGeneric
   build-depends:
-    base >=4.7 && <4.8,
+    base,
     moonshine,
     yaml,
     snap,
