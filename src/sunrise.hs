@@ -1,12 +1,13 @@
 {-# LANGUAGE OverloadedStrings, NamedFieldPuns, DeriveGeneric #-}
 module Main (main) where
 
-import GHC.Generics (Generic)
-
-import qualified Data.ByteString.Char8 as BS
-import Snap (Snap, writeBS)
-import Web.Moonshine (runMoonshine, route)
+import Control.Monad.IO.Class (liftIO)
 import Data.Yaml (FromJSON)
+import GHC.Generics (Generic)
+import Snap (Snap, writeBS)
+import System.Random (randomIO)
+import Web.Moonshine (runMoonshine, route, makeTimer, Timer, timerAdd)
+import qualified Data.ByteString.Char8 as BS
 
 -- Public Types ---------------------------------------------------------------
 -- Semi-Public Types ----------------------------------------------------------
@@ -23,10 +24,12 @@ import Data.Yaml (FromJSON)
 -}
 main :: IO ()
 main =
-  runMoonshine (\config ->
-    route [
-      ("/hello", hello config)
-    ]
+  runMoonshine (\config metrics -> do
+    -- make a distribution
+    timer <- makeTimer "some.kind.of.timer" metrics
+    return $ route [
+        ("/hello", hello timer config)
+      ]
   )
 
 
@@ -41,8 +44,10 @@ instance FromJSON Config
 
 -- Private Functions ----------------------------------------------------------
 
-hello :: Config -> Snap ()
-hello Config {salutation} = do
+hello :: Timer -> Config -> Snap ()
+hello timer Config {salutation} = do
+  -- add some random value to the metrics we are tracking.
+  liftIO $ timerAdd timer =<< randomIO
   writeBS $ BS.pack salutation
   writeBS "\n"
 
