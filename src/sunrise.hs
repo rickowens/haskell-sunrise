@@ -1,8 +1,12 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, NamedFieldPuns, DeriveGeneric #-}
 module Main (main) where
 
+import GHC.Generics (Generic)
+
+import qualified Data.ByteString.Char8 as BS
 import Snap (Snap, writeBS)
-import Web.Moonshine (runMoonshine, route)
+import Web.Moonshine (runMoonshine, route, LoggingConfig(), HasLoggingConfig(..))
+import Data.Yaml (FromJSON)
 
 -- Public Types ---------------------------------------------------------------
 -- Semi-Public Types ----------------------------------------------------------
@@ -20,15 +24,34 @@ import Web.Moonshine (runMoonshine, route)
 -}
 main :: IO ()
 main =
-  runMoonshine $ route [
-    ("/hello", hello)
-  ]
+  runMoonshine (\config ->
+    route [
+      ("/hello", hello config)
+    ]
+  )
 
 
 -- Private Types --------------------------------------------------------------
+
+data Config =
+  Config {
+    salutation :: String
+  , logging :: LoggingConfig
+  } deriving (Generic)
+
+instance FromJSON Config
+
+{- |
+  Your Config type must be an instance of HasLoggingConfig.
+-}
+instance HasLoggingConfig Config where
+  getLoggingConfig = Just . logging
+
 -- Private Functions ----------------------------------------------------------
 
-hello :: Snap ()
-hello = writeBS "hi!\n"
+hello :: Config -> Snap ()
+hello Config {salutation} = do
+  writeBS $ BS.pack salutation
+  writeBS "\n"
 
 
