@@ -5,7 +5,7 @@ import GHC.Generics (Generic)
 
 import qualified Data.ByteString.Char8 as BS
 import Snap (Snap, writeBS)
-import Web.Moonshine (runMoonshine, route, LoggingConfig(), HasLoggingConfig(..))
+import Web.Moonshine (runMoonshine, route)
 import Data.Yaml (FromJSON)
 
 -- Public Types ---------------------------------------------------------------
@@ -36,16 +36,9 @@ main =
 data Config =
   Config {
     salutation :: String
-  , logging :: LoggingConfig
   } deriving (Generic)
 
 instance FromJSON Config
-
-{- |
-  Your Config type must be an instance of HasLoggingConfig.
--}
-instance HasLoggingConfig Config where
-  getLoggingConfig = Just . logging
 
 -- Private Functions ----------------------------------------------------------
 
