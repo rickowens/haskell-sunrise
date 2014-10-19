@@ -6,7 +6,8 @@ import Data.Yaml (FromJSON)
 import GHC.Generics (Generic)
 import Snap (Snap, writeBS)
 import System.Random (randomIO)
-import Web.Moonshine (runMoonshine, route, makeTimer, Timer, timerAdd)
+import Web.Moonshine (runMoonshine, route, makeTimer, Timer, timerAdd,
+  getUserConfig)
 import qualified Data.ByteString.Char8 as BS
 
 -- Public Types ---------------------------------------------------------------
@@ -24,13 +25,13 @@ import qualified Data.ByteString.Char8 as BS
 -}
 main :: IO ()
 main =
-  runMoonshine (\config metrics -> do
+  runMoonshine $ do
+    config <- getUserConfig
     -- make a distribution
-    timer <- makeTimer "some.kind.of.timer" metrics
-    return $ route [
+    timer <- makeTimer "some.kind.of.timer"
+    route [
         ("/hello", hello timer config)
       ]
-  )
 
 
 -- Private Types --------------------------------------------------------------
@@ -47,7 +48,7 @@ instance FromJSON Config
 hello :: Timer -> Config -> Snap ()
 hello timer Config {salutation} = do
   -- add some random value to the metrics we are tracking.
-  liftIO $ timerAdd timer =<< randomIO
+  liftIO $ timerAdd timer =<< (randomIO :: IO Int)
   writeBS $ BS.pack salutation
   writeBS "\n"
 
