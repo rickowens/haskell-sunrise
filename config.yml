@@ -1,10 +1,14 @@
 salutation: Hello!
 logging:
   level: INFO
-# server:
-#   applicationConnector:
-#     - scheme: HTTP
-#       port: 8009
-#   adminConnector:
-#     - scheme: HTTP
-#       port: 8010
+server:
+  applicationConnector:
+    - scheme: HTTPS
+      port: 8009
+      cert: server.crt
+      key: server.key
+    - scheme: HTTP
+      port: 8007
+  adminConnector:
+    - scheme: HTTP
+      port: 8010
