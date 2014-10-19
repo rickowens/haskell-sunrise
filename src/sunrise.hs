@@ -19,8 +19,7 @@ import Data.Yaml (FromJSON)
 
   Preferably, the code written below should be basically complete, and this
   should cause some level of dropwizardy-type things to happen, whatever we
-  decide those are. The only additional thing that should be added to this file
-  that we know of is something to do with configuration.
+  decide those are.
 -}
 main :: IO ()
 main =
