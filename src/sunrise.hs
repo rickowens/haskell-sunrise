@@ -1,12 +1,14 @@
 {-# LANGUAGE OverloadedStrings, NamedFieldPuns, DeriveGeneric #-}
 module Main (main) where
 
-import GHC.Generics (Generic)
-
-import qualified Data.ByteString.Char8 as BS
-import Snap (Snap, writeBS)
-import Web.Moonshine (runMoonshine, route, LoggingConfig(), HasLoggingConfig(..))
+import Control.Monad.IO.Class (liftIO)
 import Data.Yaml (FromJSON)
+import GHC.Generics (Generic)
+import Snap (Snap, writeBS)
+import System.Random (randomIO)
+import Web.Moonshine (runMoonshine, route, makeTimer, Timer, timerAdd,
+  getUserConfig)
+import qualified Data.ByteString.Char8 as BS
 
 -- Public Types ---------------------------------------------------------------
 -- Semi-Public Types ----------------------------------------------------------
@@ -19,16 +21,17 @@ import Data.Yaml (FromJSON)
 
   Preferably, the code written below should be basically complete, and this
   should cause some level of dropwizardy-type things to happen, whatever we
-  decide those are. The only additional thing that should be added to this file
-  that we know of is something to do with configuration.
+  decide those are.
 -}
 main :: IO ()
 main =
-  runMoonshine (\config ->
+  runMoonshine $ do
+    config <- getUserConfig
+    -- make a distribution
+    timer <- makeTimer "some.kind.of.timer"
     route [
-      ("/hello", hello config)
-    ]
-  )
+        ("/hello", hello timer config)
+      ]
 
 
 -- Private Types --------------------------------------------------------------
@@ -36,21 +39,16 @@ main =
 data Config =
   Config {
     salutation :: String
-  , logging :: LoggingConfig
   } deriving (Generic)
 
 instance FromJSON Config
 
-{- |
-  Your Config type must be an instance of HasLoggingConfig.
--}
-instance HasLoggingConfig Config where
-  getLoggingConfig = Just . logging
-
 -- Private Functions ----------------------------------------------------------
 
-hello :: Config -> Snap ()
-hello Config {salutation} = do
+hello :: Timer -> Config -> Snap ()
+hello timer Config {salutation} = do
+  -- add some random value to the metrics we are tracking.
+  liftIO $ timerAdd timer =<< (randomIO :: IO Int)
   writeBS $ BS.pack salutation
   writeBS "\n"
 
