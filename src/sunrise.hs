@@ -4,10 +4,10 @@ module Main (main) where
 import Control.Monad.IO.Class (liftIO)
 import Data.Yaml (FromJSON)
 import GHC.Generics (Generic)
-import Snap (Snap, writeBS)
+import Snap (writeBS)
 import System.Random (randomIO)
 import Web.Moonshine (runMoonshine, route, makeTimer, Timer, timerAdd,
-  getUserConfig)
+  getUserConfig, liftSnap, Moonshine)
 import qualified Data.ByteString.Char8 as BS
 
 -- Public Types ---------------------------------------------------------------
@@ -26,11 +26,10 @@ import qualified Data.ByteString.Char8 as BS
 main :: IO ()
 main =
   runMoonshine $ do
-    config <- getUserConfig
     -- make a distribution
     timer <- makeTimer "some.kind.of.timer"
     route [
-        ("/hello", hello timer config)
+        ("/hello", hello timer)
       ]
 
 
@@ -45,11 +44,13 @@ instance FromJSON Config
 
 -- Private Functions ----------------------------------------------------------
 
-hello :: Timer -> Config -> Snap ()
-hello timer Config {salutation} = do
+hello :: Timer -> Moonshine Config ()
+hello timer = do -- Moonshine monad
+  Config {salutation} <- getUserConfig
   -- add some random value to the metrics we are tracking.
-  liftIO $ timerAdd timer =<< (randomIO :: IO Int)
-  writeBS $ BS.pack salutation
-  writeBS "\n"
+  timerAdd timer =<< liftIO (randomIO :: IO Float)
+  liftSnap $ do -- snap monad
+    writeBS $ BS.pack salutation
+    writeBS "\n"
 
 
